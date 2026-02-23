@@ -10,6 +10,14 @@ DB_PATH = "../guardian_articles.duckdb"
 # Connect to DuckDB
 con = duckdb.connect(DB_PATH)
 
+
+# Run if search_term var is not in the table
+# con.execute("""
+# ALTER TABLE raw_articles
+# ADD COLUMN IF NOT EXISTS search_term TEXT
+# """)
+con.execute("DROP TABLE IF EXISTS raw_articles")
+
 # Ensure the raw_articles table exists with all needed columns
 con.execute("""
 CREATE TABLE IF NOT EXISTS raw_articles (
@@ -27,6 +35,7 @@ CREATE TABLE IF NOT EXISTS raw_articles (
     pillarName TEXT,
     headline TEXT,
     shortUrl TEXT,
+    search_term TEXT,
     pull_date TIMESTAMP
 )
 """)
@@ -56,16 +65,13 @@ for json_file in json_files:
             "webTitle": item.get("webTitle"),
             "webUrl": item.get("webUrl"),
             "apiUrl": item.get("apiUrl"),
-            "body": fields.get("body")
-            or item.get("body")
-            or "",  # full HTML guaranteed
-            "isHosted": str(
-                item.get("isHosted")
-            ),  # convert to string to avoid type errors
+            "body": fields.get("body") or item.get("body") or "",
+            "isHosted": str(item.get("isHosted")),
             "pillarId": item.get("pillarId"),
             "pillarName": item.get("pillarName"),
             "headline": fields.get("headline") or item.get("webTitle"),
             "shortUrl": fields.get("shortUrl") or item.get("webUrl"),
+            "search_term": item.get("search_term"),
             "pull_date": pd.Timestamp.now(),
         }
         records.append(record)
@@ -76,10 +82,12 @@ for json_file in json_files:
     table_columns = [col[0] for col in con.execute("DESCRIBE raw_articles").fetchall()]
     df = df[[c for c in df.columns if c in table_columns]]
 
-    # Remove duplicates based on 'id'
-    existing_ids = con.execute("SELECT id FROM raw_articles").fetchall()
-    existing_ids = {row[0] for row in existing_ids}
-    df = df[~df["id"].isin(existing_ids)]
+    # Remove duplicates based on 'id' and search_term
+    existing_pairs = con.execute("SELECT id, search_term FROM raw_articles").fetchall()
+
+    existing_pairs = set(existing_pairs)
+
+    df = df[~df.apply(lambda x: (x["id"], x["search_term"]) in existing_pairs, axis=1)]
 
     if df.empty:
         print("No new articles to insert.")
