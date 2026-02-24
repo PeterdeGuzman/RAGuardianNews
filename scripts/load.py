@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 import duckdb
-from datetime import datetime
+import subprocess
 
 DATA_DIR = "../data"
 DB_PATH = "../guardian_articles.duckdb"
@@ -99,5 +99,8 @@ for json_file in json_files:
     con.unregister("temp_df")
 
     print(f"Inserted {len(df)} new articles.")
+
+# running cleaned_articles sql process
+subprocess.run(["dbt", "run"], cwd="dbt_guardian")
 
 print("All done!")
