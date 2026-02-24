@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: cleaned_articles
+    description: "Articles with cleaned HTML"
+    columns:
+      - name: id
+        description: "Unique article ID"
+        tests:
+          - not_null
+          - unique
+      - name: clean_body
+        description: "Body text with HTML removed"
+        tests:
+          - not_null
