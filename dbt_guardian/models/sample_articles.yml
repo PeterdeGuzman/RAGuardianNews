@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: sample_articles
+    description: "Deterministic 5-article sample per search term"
+    columns:
+      - name: article_id
+        tests:
+          - not_null
+      - name: search_term
+        tests:
+          - not_null
