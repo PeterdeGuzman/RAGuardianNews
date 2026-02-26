@@ -8,6 +8,7 @@ dependencies = [
     "duckdb>=1.4.4",
     "ipykernel>=7.2.0",
     "jupyter>=1.1.1",
+    "matplotlib>=3.10.8",
     "pandas>=3.0.0",
     "python-dotenv>=1.2.1",
     "requests>=2.32.5",
