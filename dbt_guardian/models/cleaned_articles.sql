@@ -4,6 +4,23 @@
 
 select
     *,
-    regexp_replace(body, '<[^>]+>', '', 'g') as clean_body
+    trim(
+        regexp_replace(
+            regexp_replace(
+                regexp_replace(
+                    regexp_replace(
+                        regexp_replace(
+                            body,
+                            '<script[^>]*>.*?</script>', '', 'gis'
+                        ),
+                        '<style[^>]*>.*?</style>', '', 'gis'
+                    ),
+                    '<[^>]*>', '', 'g'
+                ),
+                '&[^;\s]+;', '', 'g'
+            ),
+            '\b(div|span|p|block|class|id|header|footer)\b', '', 'gi'
+        )
+    ) as clean_body
 from {{ source('raw', 'raw_articles') }}
 where search_term in ('artificial intelligence', 'generative AI')
