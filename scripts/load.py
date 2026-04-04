@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS raw_articles (
     pillarName TEXT,
     headline TEXT,
     shortUrl TEXT,
-    search_term TEXT,
+    search_terms TEXT,
     pull_date TIMESTAMP
 )
 """)
