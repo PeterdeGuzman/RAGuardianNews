@@ -35,3 +35,10 @@ cleaned_body = con.execute("""
                            FROM cleaned_articles
                            """).fetchdf()
 print(cleaned_body)
+
+count_cleanedarticles = con.execute("""
+                                    SELECT COUNT(*)
+                                    FROM cleaned_articles
+                                    """).fetchdf()
+
+print(count_cleanedarticles)

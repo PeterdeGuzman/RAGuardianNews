@@ -10,12 +10,7 @@ DB_PATH = "../guardian_articles.duckdb"
 # Connect to DuckDB
 con = duckdb.connect(DB_PATH)
 
-
-# Run if search_term var is not in the table
-# con.execute("""
-# ALTER TABLE raw_articles
-# ADD COLUMN IF NOT EXISTS search_term TEXT
-# """)
+# Re-produce the table (maybe edit this to not drop completely)
 con.execute("DROP TABLE IF EXISTS raw_articles")
 
 # Ensure the raw_articles table exists with all needed columns
@@ -48,11 +43,10 @@ for json_file in json_files:
     file_path = os.path.join(DATA_DIR, json_file)
     print(f"Processing {json_file}...")
 
-    # Load JSON
+    # Load the JSON file of raw articles
     with open(file_path, "r", encoding="utf-8") as f:
         raw_data = json.load(f)
 
-    # Flatten 'fields' dict and ensure full HTML body
     records = []
     for item in raw_data:
         fields = item.get("fields", {})
@@ -71,36 +65,24 @@ for json_file in json_files:
             "pillarName": item.get("pillarName"),
             "headline": fields.get("headline") or item.get("webTitle"),
             "shortUrl": fields.get("shortUrl") or item.get("webUrl"),
-            "search_term": item.get("search_term"),
+            "search_terms": item.get("search_terms"),
             "pull_date": pd.Timestamp.now(),
         }
         records.append(record)
 
     df = pd.DataFrame(records)
 
-    # Keep only columns that exist in the table
-    table_columns = [col[0] for col in con.execute("DESCRIBE raw_articles").fetchall()]
-    df = df[[c for c in df.columns if c in table_columns]]
-
-    # Remove duplicates based on 'id' and search_term
-    existing_pairs = con.execute("SELECT id, search_term FROM raw_articles").fetchall()
-
-    existing_pairs = set(existing_pairs)
-
-    df = df[~df.apply(lambda x: (x["id"], x["search_term"]) in existing_pairs, axis=1)]
-
-    if df.empty:
-        print("No new articles to insert.")
-        continue
-
     # Insert into DuckDB
     con.register("temp_df", df)
     con.execute("INSERT INTO raw_articles SELECT * FROM temp_df")
     con.unregister("temp_df")
 
-    print(f"Inserted {len(df)} new articles.")
+    print(f"Inserted {len(df)} new articles from {json_file}.")
 
-# running cleaned_articles sql process
-subprocess.run(["dbt", "run"], cwd="dbt_guardian")
+# running cleaned_articles sql process (if RUN_DBT is TRUE)
+RUN_DBT = True
+
+if RUN_DBT:
+    subprocess.run(["dbt", "run"], cwd="dbt_guardian")
 
 print("All done!")
