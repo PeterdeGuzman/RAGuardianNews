@@ -18,10 +18,11 @@ FROM_DATE = (datetime.today() - relativedelta(years=10)).strftime("%Y-%m-%d")
 TO_DATE = datetime.today().strftime("%Y-%m-%d")
 
 PAGE_SIZE = 50
-TEST_MODE = False  # change to True if you want to limit results
+TEST_MODE = False
 
-
-all_articles = []
+# Collect all articles across queries, tracking which terms matched each ID
+articles_by_id = {}  # id -> article dict
+terms_by_id = {}  # id -> set of matching search terms
 
 for QUERY in QUERIES:
     print(f"\nStarting query: {QUERY}")
@@ -46,33 +47,33 @@ for QUERY in QUERIES:
         data = response.json()
         results = data["response"]["results"]
 
-        # Tag each article with the search term
         for article in results:
-            article["search_term"] = QUERY
-
-        all_articles.extend(results)
+            article_id = article["id"]
+            if article_id not in articles_by_id:
+                articles_by_id[article_id] = article
+                terms_by_id[article_id] = set()
+            terms_by_id[article_id].add(QUERY)
 
         print(f"Fetched page {page} with {len(results)} articles")
 
-        # Optional test limit
-        # if TEST_MODE and len(all_articles) >= 20:
-        #     break
+        if TEST_MODE and len(articles_by_id) >= 20:
+            break
 
         if page >= data["response"]["pages"]:
             break
 
         page += 1
 
-# ✅ Deduplicate by article ID
-unique_articles = {}
-for article in all_articles:
-    unique_articles[article["id"]] = article
+# Attach the comma-separated search_terms field to each article
+final_articles = []
+for article_id, article in articles_by_id.items():
+    article["search_terms"] = ", ".join(sorted(terms_by_id[article_id]))
+    final_articles.append(article)
 
-final_articles = list(unique_articles.values())
+print(f"\nTotal unique articles collected: {len(final_articles)}")
+multi_match = sum(1 for a in final_articles if "," in a["search_terms"])
+print(f"Articles matched by more than one search term: {multi_match}")
 
-print(f"\nTotal articles after deduplication: {len(final_articles)}")
-
-# Save JSON backup
 backup_path = f"../data/raw_articles_{FROM_DATE}_to_{TO_DATE}.json"
 with open(backup_path, "w") as f:
     json.dump(final_articles, f, indent=2)
