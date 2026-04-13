@@ -46,7 +46,7 @@ def build_topic_model() -> BERTopic:
     representation_model = KeyBERTInspired()
 
     topic_model = BERTopic(
-        embedding_model=embedding_model,  # <-- add this
+        embedding_model=embedding_model,
         umap_model=umap_model,
         hdbscan_model=hdbscan_model,
         vectorizer_model=vectorizer,
@@ -58,6 +58,49 @@ def build_topic_model() -> BERTopic:
         verbose=True,
     )
     return topic_model
+
+
+def build_topic_model_from_cfg(cfg: dict) -> BERTopic:
+    """
+    Different version of build_topic_model() that uses experiment config dict
+    instead of constant vars in config.py
+    This runs in the run_experiments.py script but not the run_pipeline.py script
+    """
+    embedding_model = SentenceTransformer(EMBEDDING_MODEL)
+
+    umap_model = UMAP(
+        n_neighbors=cfg["n_neighbors"],
+        n_components=cfg["n_components"],
+        min_dist=0.0,
+        metric="cosine",
+        random_state=42,
+    )
+    hdbscan_model = HDBSCAN(
+        min_cluster_size=cfg["min_cluster_size"],
+        min_samples=cfg["min_samples"],
+        metric="euclidean",
+        cluster_selection_method=cfg["method"],
+        prediction_data=True,
+    )
+    vectorizer = CountVectorizer(
+        stop_words="english",
+        min_df=5,
+        ngram_range=(1, 2),
+        token_pattern=r"(?u)\b[a-zA-Z][a-zA-Z]+\b",
+    )
+
+    return BERTopic(
+        embedding_model=embedding_model,
+        umap_model=umap_model,
+        hdbscan_model=hdbscan_model,
+        vectorizer_model=vectorizer,
+        representation_model=KeyBERTInspired(),
+        top_n_words=10,
+        min_topic_size=cfg["min_cluster_size"],
+        nr_topics="auto",
+        calculate_probabilities=True,
+        verbose=False,
+    )
 
 
 def train_and_save(df: pd.DataFrame, embeddings: np.ndarray) -> pd.DataFrame:
