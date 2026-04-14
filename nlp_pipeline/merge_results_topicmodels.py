@@ -24,7 +24,7 @@ df_outliers["outlier_topic_id"] = df_outliers["outlier_topic_id"].replace(0, -1)
 
 # offset outlier topic IDs to avoid topic collision with main model
 max_main_topic = df_main[df_main["topic_id"] != -1]["topic_id"].max()
-print("Max topic ID from main model is: {max_main_topic}")
+print(f"Max topic ID from main model is: {max_main_topic}")
 
 # offset all topic ids except for the uncategorized topic
 df_outliers["outlier_topic_id_offset"] = df_outliers["outlier_topic_id"].apply(
@@ -88,7 +88,7 @@ df_merged = pd.concat(
     [df_main[["id", "webTitle", "webPublicationDate"]], resolved], axis=1
 )
 
-# ── summary ────────────────────────────────────────────────────────────────────
+# print summary
 total = len(df_merged)
 from_main = (df_merged["source"] == "main_model").sum()
 from_outlier = (df_merged["source"] == "outlier_model").sum()
@@ -106,8 +106,10 @@ print(
 )
 print(f"{'═' * 50}")
 
-# check step
-print("checking step")
+# checking step
+print(
+    "Ensuring that the outlier table captured all uncategorized articles from main model:"
+)
 
 main_outlier_ids = set(df_main[df_main["topic_id"] == -1]["id"].astype(str))
 outlier_table_ids = set(df_outliers["id"].astype(str))
@@ -123,7 +125,8 @@ print(f"In main -1 but missing from outlier table:   {len(only_in_main):,}")
 print(f"In outlier table but not in main -1:         {len(only_in_outlier_tbl):,}")
 
 # ── write back to DuckDB ───────────────────────────────────────────────────────
-# keep article_topics intact as a backup, write merged as new canonical table
+# don't overwrite article_topics
+# write merged as new  table
 conn.execute("CREATE OR REPLACE TABLE article_topics_merged AS SELECT * FROM df_merged")
 
 # verify
