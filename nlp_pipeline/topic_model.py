@@ -12,7 +12,7 @@ from config import (
     UMAP_N_COMPONENTS,
     HDBSCAN_MIN_CLUSTER,
     MIN_TOPIC_SIZE,
-    EMBEDDING_MODEL,  # <-- make sure this is imported too
+    EMBEDDING_MODEL,
 )
 
 
