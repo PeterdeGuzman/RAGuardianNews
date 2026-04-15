@@ -122,7 +122,7 @@ def train_and_save(df: pd.DataFrame, embeddings: np.ndarray) -> pd.DataFrame:
     print(f"\nFound {len(topic_info) - 1} topics (excluding outliers)\n")
     print(topic_info[["Topic", "Count", "Name"]].head(20).to_string())
 
-    df_out = df[["id", "webTitle", "webPublicationDate"]].copy()
+    df_out = df[["id", "webTitle", "webPublicationDate", "text"]].copy()
     df_out["topic_id"] = topics
     df_out["topic_prob"] = probs.max(axis=1) if probs.ndim > 1 else probs
     df_out["topic_label"] = df_out["topic_id"].map(

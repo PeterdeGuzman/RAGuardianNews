@@ -94,7 +94,7 @@ def resolve_topic(row):
 print("\nMerging topic assignments...")
 resolved = df_main.apply(resolve_topic, axis=1)
 df_merged = pd.concat(
-    [df_main[["id", "webTitle", "webPublicationDate"]], resolved], axis=1
+    [df_main[["id", "webTitle", "webPublicationDate", "clean_body"]], resolved], axis=1
 )
 
 # print summary
