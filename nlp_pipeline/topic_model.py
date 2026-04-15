@@ -112,7 +112,7 @@ def train_and_save(df: pd.DataFrame, embeddings: np.ndarray) -> pd.DataFrame:
     topics, probs = topic_model.fit_transform(df["text"].tolist(), embeddings)
 
     topic_model.save(
-        str(BERTOPIC_MODEL_PATH),
+        str(BERTOPIC_MODEL_PATH.resolve()),
         serialization="safetensors",
         save_ctfidf=True,
         # save_embedding_model=False,
@@ -132,7 +132,7 @@ def train_and_save(df: pd.DataFrame, embeddings: np.ndarray) -> pd.DataFrame:
 
 
 def load_model() -> BERTopic:
-    return BERTopic.load(str(BERTOPIC_MODEL_PATH))
+    return BERTopic.load(str(BERTOPIC_MODEL_PATH.resolve()))
 
 
 def predict_topics(texts: list[str], embeddings: np.ndarray, topic_model: BERTopic):

@@ -8,7 +8,7 @@ MODEL_DIR.mkdir(exist_ok=True)
 # Version variable so I can iterate on the topic models
 MODEL_VERSION = "v1"  # I will adjust this with each iteration
 
-BERTOPIC_MODEL_PATH = MODEL_DIR / "bertopic_model_{MODEL_VERSION}"
+BERTOPIC_MODEL_PATH = MODEL_DIR / f"bertopic_model_{MODEL_VERSION}"
 EMBEDDINGS_PATH = MODEL_DIR / "embeddings.npy"
 FAISS_INDEX_PATH = MODEL_DIR / "faiss.index"
 
