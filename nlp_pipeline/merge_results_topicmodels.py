@@ -42,6 +42,12 @@ print(
 )
 
 
+# function to clean labels in the outlier topics tabel (they need to be updated to prevent topic ID collision)
+def clean_label(label: str) -> str:
+    # remove leading "X_" where X is a number
+    return label.split("_", 1)[-1]
+
+
 # merge this into the main article topics table
 def resolve_topic(row):
     """
@@ -63,11 +69,14 @@ def resolve_topic(row):
 
     if row["id"] in outlier_lookup.index:
         outlier = outlier_lookup.loc[row["id"]]
+        new_id = outlier["outlier_topic_id_offset"]
+        raw_label = outlier["outlier_topic_label"]
+        cleaned = clean_label(raw_label)
         return pd.Series(
             {
-                "topic_id": outlier["outlier_topic_id_offset"],
+                "topic_id": new_id,
                 "topic_prob": outlier["outlier_topic_prob"],
-                "topic_label": outlier["outlier_topic_label"],
+                "topic_label": f"{new_id}_{cleaned}",
                 "source": "outlier_model",
             }
         )
@@ -138,5 +147,45 @@ check = conn.execute("""
 """).df()
 print(f"\nVerification:\n{check.to_string(index=False)}")
 
+# check unique topic_id and topic_label
+df_topics = conn.execute(
+    """
+    SELECT * 
+    FROM article_topics_merged
+    """
+).df()
+
+# checking unique topic ids and topic labels
+n_topic_ids = df_topics["topic_id"].nunique()
+print("Unique topic_id:", n_topic_ids)
+
+# extract prefix from topic_label
+df_topics["label_prefix"] = (
+    df_topics["topic_label"].str.extract(r"^(-?\d+)_")[0].astype(int)
+)
+
+n_prefixes = df_topics["label_prefix"].nunique()
+print("Unique label prefixes:", n_prefixes)
+
+ids_set = set(df_topics["topic_id"].unique())
+prefix_set = set(df_topics["label_prefix"].unique())
+
+print("IDs match prefixes:", ids_set == prefix_set)
+
+# checking topic id collision
+
+print(
+    "This dataframe will be empty if there is no topic_id mapping to multiple different label strings. Empty dataframe is GOOD."
+)
+df_topics.groupby("topic_id")["topic_label"].nunique()
+bad = (
+    df_topics.groupby("topic_id")["topic_label"]
+    .nunique()
+    .reset_index(name="n_labels")
+    .query("n_labels > 1")
+)
+
+print(bad)
+assert df_topics.groupby("topic_id")["topic_label"].nunique().max() == 1
 conn.close()
 print("\nWritten → article_topics_merged")
