@@ -2462,6 +2462,7 @@ dependencies = [
     { name = "sentence-transformers" },
     { name = "spacy" },
     { name = "streamlit" },
+    { name = "tqdm" },
     { name = "umap-learn" },
 ]
 
@@ -2481,6 +2482,7 @@ requires-dist = [
     { name = "sentence-transformers", specifier = ">=5.4.0" },
     { name = "spacy", specifier = ">=3.8.11" },
     { name = "streamlit", specifier = ">=1.56.0" },
+    { name = "tqdm", specifier = ">=4.67.3" },
     { name = "umap-learn", specifier = ">=0.5.12" },
 ]
 
