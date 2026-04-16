@@ -24,6 +24,8 @@ def load_articles() -> pd.DataFrame:
 def save_topics(df_topics: pd.DataFrame):
     """Write article→topic assignments back to DuckDB."""
     conn = get_conn()
+    print(df_topics.columns)
+    conn.register("df_topics_view", df_topics)
     conn.execute("DROP TABLE IF EXISTS article_topics")
     conn.execute("""
         CREATE TABLE article_topics AS
