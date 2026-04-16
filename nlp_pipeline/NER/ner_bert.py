@@ -36,7 +36,7 @@ processed = (
 )
 
 df = con.execute("""
-    SELECT id, clean_bodytext 
+    SELECT id, text 
     FROM article_topics_labelled
 """).df()
 
@@ -45,7 +45,7 @@ print(f"Articles to process: {len(df):,}")
 
 rows = []
 ids = df["id"].tolist()
-texts = df["clean_bodytext"].tolist()
+texts = df["text"].tolist()
 
 for i, (article_id, text) in enumerate(tqdm(zip(ids, texts), total=len(ids))):
     # BERT has a 512 token limit — truncate long articles
