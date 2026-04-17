@@ -19,5 +19,6 @@ dependencies = [
     "sentence-transformers>=5.4.0",
     "spacy>=3.8.11",
     "streamlit>=1.56.0",
+    "tqdm>=4.67.3",
     "umap-learn>=0.5.12",
 ]
