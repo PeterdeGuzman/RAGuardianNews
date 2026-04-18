@@ -6,14 +6,15 @@ sys.path.append(str(Path(__file__).parent))
 import os
 import requests
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from retrieval import retrieve
 
 load_dotenv()
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 PROMPT_TEMPLATE = """You are a helpful assistant answering questions about Guardian newspaper articles.
-    Use ONLY the follow article excerpts to answer thq question.
+    Use ONLY the follow article excerpts to answer the question.
     If the articles do not contain enjough information to answer, say so clearly.
 
     ARTICLES:
@@ -29,7 +30,7 @@ def _build_context(articles: list[dict], max_chars_per_article: int = 1000) -> s
     chunks = []
     for i, a in enumerate(articles, 1):
         chunk = (
-            f"[Article {i}] {a['webTitle']} ({a['webPublicationDate'][:10]})\n"
+            f"[Article {i}] {a['webTitle']} ({a['webPublicationDate'].strftime('%Y-%m-%d')})\n"
             f"Topic: {a['topic_label_clean']}\n"
             f"{a['text'][:max_chars_per_article]}"
         )
@@ -38,10 +39,12 @@ def _build_context(articles: list[dict], max_chars_per_article: int = 1000) -> s
 
 
 # Gemini Prompt
-def generate_gemini(prompt: str) -> str:
-    model = genai.GenerativeModel("gemini-2.0-flash")
-    response = model.generate_content(prompt)
-    return response.text
+# def generate_gemini(prompt: str) -> str:
+#     response = client.models.generate_content(
+#         model="gemini-2.0-flash",
+#         contents=prompt,
+#     )
+#     return response.text
 
 
 # Ollama Prompt
@@ -64,28 +67,27 @@ def rag_query(question: str, top_k: int = 5) -> str:
     context = _build_context(articles)
     prompt = PROMPT_TEMPLATE.format(context=context, question=question)
 
-    print("Asking Gemini...")
-    gemini_response = generate_gemini(prompt)
+    print("Querying Llama 3.2 3B...")
+    llama_response = generate_ollama(prompt, model="llama3.2:3b")
 
-    print("Now Asking Ollama...")
-
-    ollama_response = generate_ollama(prompt)
+    print("Querying Mistral 7B...")
+    mistral_response = generate_ollama(prompt, model="mistral:7b")
 
     return {
         "question": question,
         "articles": articles,
         "prompt": prompt,
-        "gemini": gemini_response,
-        "ollama": ollama_response,
+        "llama": llama_response,
+        "mistral": mistral_response,
     }
 
 
-if __name__ == "_main__":
+if __name__ == "__main__":
     result = rag_query("Where has Elon Musk tried to build datacenters for AI and why?")
     print("\n --- Retrieved Articles: ---")
     for a in result["articles"]:
         print(f"   [{a['score']:.3f}] {a['webTitle']}")
-        print("\n--- Gemini's Response: ---")
-    print(result["gemini"])
-    print("\n--- Ollama's Response: ---")
-    print(result["ollama"])
+        print("\n--- Ollama's Response: ---")
+    print(result["llama"])
+    print("\n--- Mistral's Response: ---")
+    print(result["mistral"])

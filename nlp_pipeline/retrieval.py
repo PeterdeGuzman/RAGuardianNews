@@ -61,7 +61,7 @@ def retrieve(query: str, top_k: int = 5) -> list[dict]:
     for article_id, score in zip(article_ids, scores[0]):
         match = rows[rows["id"] == article_id]
         if not match.empty:
-            r = match.iloc[0].to_dicT()
+            r = match.iloc[0].to_dict()
             r["score"] = float(score)
             results.append(r)
     return results
