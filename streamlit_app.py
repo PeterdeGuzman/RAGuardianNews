@@ -69,7 +69,7 @@ with tab2:
     st.header("Search by Named Entity")
 
     entity_query = st.text_input(
-        "Search for a person, place, or organisation", placeholder="e.g. Elon Musk"
+        "Search for a person, place, or organization", placeholder="e.g. Elon Musk"
     )
     ner_model = st.radio("NER Model", ["spaCy", "BERT", "Both"], horizontal=True)
     n_ner_results = st.slider("Number of articles", 5, 50, 10, key="ner_slider")
