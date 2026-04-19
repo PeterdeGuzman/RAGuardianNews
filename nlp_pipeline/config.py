@@ -1,14 +1,16 @@
 from pathlib import Path
 
-DB_PATH = "../guardian_articles.duckdb"
-MODEL_DIR = Path("models/")
+_BASE_DIR = Path(__file__).parent
+MODEL_DIR = _BASE_DIR / "models"
 MODEL_DIR.mkdir(exist_ok=True)
+DB_PATH = str(_BASE_DIR.parent / "guardian_articles.duckdb")
 
 
 # Version variable so I can iterate on the topic models
 MODEL_VERSION = "v1"  # I will adjust this with each iteration
 
 BERTOPIC_MODEL_PATH = MODEL_DIR / f"bertopic_model_{MODEL_VERSION}"
+
 EMBEDDINGS_PATH = MODEL_DIR / "embeddings.npy"
 FAISS_INDEX_PATH = MODEL_DIR / "faiss.index"
 
