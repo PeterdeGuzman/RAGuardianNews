@@ -8,18 +8,24 @@ import duckdb
 from retrieval import retrieve
 from rag import rag_query
 
+
 DB_PATH = "guardian_articles.duckdb"
 
 st.set_page_config(page_title="Guardian News Explorer", page_icon="📰", layout="wide")
 
 st.title("📰 RAG Guardian News Explorer")
 
-tab1, tab2, tab3 = st.tabs(["🔍 Topic Search", "🏷️ NER Search", "🤖 RAG Q&A"])
+tab1, tab2, tab3, tab4 = st.tabs(
+    ["🔍 Topic Search", "🏷️ NER Search", "🤖 RAG Q&A", "📊 Corpus Analysis"]
+)
 
 # ── Tab 1: Topic Search ───────────────────────────────────────────────────────
 with tab1:
     st.header("Search by Topic")
-
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Articles", "24,660")
+    col2.metric("Topics", "117")
+    col3.metric("Date Range", "2016–2026")
     con = duckdb.connect(DB_PATH, read_only=True)
     topics = (
         con.execute("""
@@ -190,13 +196,13 @@ with tab2:
 
 # ── Tab 3: RAG Q&A ────────────────────────────────────────────────────────────
 with tab3:
-    st.header("Ask a Question (RAG)")
+    st.header("Ask a Question!")
     st.caption(
-        "Retrieves relevant Guardian articles and generates answers using Llama 3.2 3B and Mistral 7B open source Large Language models"
+        "Retrieves relevant articles from The Guardian and generates answers using Llama 3.2 3B and Mistral 7B open source Large Language models"
     )
 
     question = st.text_input(
-        "Ask a question about Guardian news",
+        "Ask a question about artificial intelligence:",
         placeholder="e.g. Where is Elon Musk trying to build data centers for AI?",
     )
     top_k = st.slider("Number of articles to retrieve", 3, 10, 5)
@@ -223,3 +229,45 @@ with tab3:
         with col2:
             st.markdown("### Mistral 7B")
             st.write(result["mistral"])
+
+# ── Tab 4: Corpus Analysis ────────────────────────────────────────────────────
+with tab4:
+    st.header("Corpus Analysis")
+    st.caption(
+        "Exploratory analysis of the Guardian News corpus — topic modelling and named entity recognition."
+    )
+
+    st.divider()
+
+    # ── Plot 1 ────────────────────────────────────────────────────────────────
+    st.subheader("Topic Distribution")
+    st.caption("Distribution of articles across topics identified by BERTopic.")
+    st.info("📊 Plot coming soon — paste topic distribution plot code here")
+    # fig, ax = plt.subplots()
+    # # your existing notebook code here
+    # st.pyplot(fig)
+    # plt.close(fig)  # important — prevents figures accumulating in memory
+    st.divider()
+
+    # ── Plot 2 ────────────────────────────────────────────────────────────────
+    st.subheader("NER Entity Label Distribution")
+    st.caption(
+        "Comparison of entity label frequencies between spaCy and BERT NER models."
+    )
+    st.info("📊 Plot coming soon — paste NER label distribution plot code here")
+
+    st.divider()
+
+    # ── Plot 3 ────────────────────────────────────────────────────────────────
+    st.subheader("NER Model Agreement by Topic")
+    st.caption(
+        "Jaccard similarity between spaCy and BERT entity extractions, broken down by topic."
+    )
+    st.info("📊 Plot coming soon — paste agreement box plot code here")
+
+    st.divider()
+
+    # ── Plot 4 ────────────────────────────────────────────────────────────────
+    st.subheader("Top Named Entities")
+    st.caption("Most frequently mentioned people across the corpus by model.")
+    st.info("📊 Plot coming soon — paste top entities table/plot code here")
