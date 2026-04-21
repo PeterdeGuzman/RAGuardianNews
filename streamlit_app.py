@@ -217,7 +217,7 @@ with tab3:
                 f"[Article {i}] Similarity Score: [{a['score']:.3f}] **{a['webTitle']}** — {str(a['webPublicationDate'])[:10]}"
             ):
                 st.write(f"**Topic:** {a['topic_label_clean']}")
-                st.write(a["text"][:500] + "...")
+                st.write(a["text"])
 
         st.subheader("🤖 Model Responses")
         col1, col2 = st.columns(2)
