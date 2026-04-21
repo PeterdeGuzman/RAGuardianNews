@@ -138,7 +138,7 @@ with tab2:
                         'BERT' as model
                     FROM article_entities_bert
                     WHERE id IN ({placeholders})
-                    AND entity_label IN ('PERSON', 'PER')  -- ✅ FIX
+                    AND entity_label IN ('PERSON', 'PER')  
                     AND entity_text NOT LIKE '##%'
                     AND LENGTH(entity_text) > 2
                     GROUP BY entity_text
@@ -152,7 +152,7 @@ with tab2:
                 FROM ({union_query})
                 GROUP BY entity_text, model
                 ORDER BY count DESC
-                LIMIT 20
+                LIMIT 5
                 """,
                 article_ids * len(related_queries),
             ).df()
@@ -177,22 +177,44 @@ with tab2:
                     st.markdown(row["clean_body"])
 
         # Display other entities
+        # Display other entities
         with col2:
             if related is not None and not related.empty:
-                st.write("**Also mentioned:**")
+                st.write("**Also mentioned (count of mentions):**")
 
-                models = ["spaCy", "BERT"] if ner_model == "Both" else [ner_model]
+                if ner_model == "Both":
+                    sub_col1, sub_col2 = st.columns(2)
 
-                for model in models:
-                    st.markdown(f"**{model}**")
+                    with sub_col1:
+                        st.markdown("**spaCy**")
+                        subset = related[related["model"] == "spaCy"].head(5)
+                        if subset.empty:
+                            st.write("_None found_")
+                        else:
+                            for _, row in subset.iterrows():
+                                st.write(
+                                    f"- {row['entity_text']} ({int(row['count'])})"
+                                )
 
-                    subset = related[related["model"] == model]
+                    with sub_col2:
+                        st.markdown("**BERT**")
+                        subset = related[related["model"] == "BERT"].head(5)
+                        if subset.empty:
+                            st.write("_None found_")
+                        else:
+                            for _, row in subset.iterrows():
+                                st.write(
+                                    f"- {row['entity_text']} ({int(row['count'])})"
+                                )
 
+                else:
+                    # Single model selected
+                    subset = related.head(5)
                     if subset.empty:
                         st.write("_No entities found_")
                     else:
                         for _, row in subset.iterrows():
-                            st.write(f"- {row['entity_text']} ({row['count']})")
+                            st.write(f"- {row['entity_text']} ({int(row['count'])})")
 
 # ── Tab 3: RAG Q&A ────────────────────────────────────────────────────────────
 with tab3:
