@@ -16,7 +16,7 @@ def load_articles() -> pd.DataFrame:
         ORDER BY webPublicationDate DESC
     """).df()
     conn.close()
-    # BERTopic works best on a single concatenated text field
+    # BERTopic needs single concatenated text field
     df["text"] = df["webTitle"].fillna("") + " " + df["clean_body"].fillna("")
     return df
 
