@@ -4,17 +4,16 @@ import torch
 from transformers import pipeline
 from tqdm import tqdm
 
-BATCH_SIZE = 16  # smaller — BERT is heavier
+BATCH_SIZE = 16
 DB_PATH = "../guardian_articles.duckdb"
 
-# MPS = Apple Silicon GPU — faster than pure CPU
 device = 0 if torch.backends.mps.is_available() else -1
 print(f"Using {'MPS (Apple Silicon)' if device == 0 else 'CPU'}")
 
 ner_pipeline = pipeline(
     "ner",
     model="dslim/bert-base-NER",
-    aggregation_strategy="simple",  # merges subword tokens into full spans
+    aggregation_strategy="simple",  # merges subword tokens
     device=device,
 )
 
@@ -48,7 +47,7 @@ ids = df["id"].tolist()
 texts = df["text"].tolist()
 
 for i, (article_id, text) in enumerate(tqdm(zip(ids, texts), total=len(ids))):
-    # BERT has a 512 token limit — truncate long articles
+    # BERT has a 512 token limit , 3k chars is about this many words
     entities = ner_pipeline(text[:3000])
 
     for ent in entities:

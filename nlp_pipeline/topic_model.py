@@ -17,7 +17,7 @@ from config import (
 
 
 def build_topic_model() -> BERTopic:
-    # Pass the actual model — BERTopic won't re-encode your corpus
+    # Pass the actual model — BERTopic won't re-encode corpus
     # since you supply embeddings to fit_transform(), but KeyBERTInspired
     # needs it for scoring representative words per topic
     embedding_model = SentenceTransformer(EMBEDDING_MODEL)
@@ -136,9 +136,5 @@ def load_model() -> BERTopic:
 
 
 def predict_topics(texts: list[str], embeddings: np.ndarray, topic_model: BERTopic):
-    """
-    Infer topics for new documents without re-training.
-    Uses HDBSCAN's approximate_predict so outliers are handled gracefully.
-    """
     topics, probs = topic_model.transform(texts, embeddings)
     return topics, probs
