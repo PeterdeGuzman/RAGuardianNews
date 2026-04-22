@@ -10,5 +10,4 @@ The three text processing and analytical methods used in this project enable:
 2. **Named Entity Recognition -> Entity Search** - Users can submit a name (such as a person, place, or organization) and the platform will return related articles and entities. 
 3. **Retrieval Augmented Generation -> Question & Answer** - Users can submit a question using natural language and the platform will find relevant articles and generate a response using locally-hosted open source large language models (LLMs). 
 
-
 Instructions for Deployment Coming Soon!
